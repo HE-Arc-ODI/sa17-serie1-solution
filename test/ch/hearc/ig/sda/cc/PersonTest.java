@@ -5,6 +5,10 @@
  */
 package ch.hearc.ig.sda.cc;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,4 +92,32 @@ public class PersonTest {
         
         fail();
     }
+    
+    // utilisation de la réflexion pour tester la méthode privée
+    @Test(expected = IllegalArgumentException.class)
+    public void testCheck() {
+        Object p = new Person(DEFAULT_FIRSTNAME);
+        try {
+            for (Method me : p.getClass().getDeclaredMethods()){
+                System.out.println(me);
+            }
+            // string parameter
+            Class[] argClasses = new Class<?>[1];
+            argClasses[0] = String.class;
+            Method m = p.getClass().getDeclaredMethod("checkIfNullOrEmptyOrBlank", argClasses);
+            m.setAccessible(true);
+            m.invoke(p, "");
+        } catch (IllegalAccessException | NoSuchMethodException | SecurityException ex) {
+            Logger.getLogger(PersonTest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            if (ex.getCause() instanceof IllegalArgumentException) {
+                throw (IllegalArgumentException) ex.getCause();
+            } else {
+                Logger.getLogger(PersonTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        fail();
+    }
+    
 }
